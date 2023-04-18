@@ -4,7 +4,7 @@ from CausalModel import *
 from collections import OrderedDict
 
 class DRNet(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, num_treatments, num_strata, dosage_bounds):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, num_treatments, num_strata, dosage_bounds, hierarchy=True):
         super(DRNet, self).__init__()
         self.num_layers = num_layers
         self.num_treatments = num_treatments
@@ -12,11 +12,13 @@ class DRNet(nn.Module):
         self.dosage_bounds = dosage_bounds
 
         self.base_block = self.get_block(input_dim, hidden_dim, hidden_dim, num_layers)
+        self.hierarchy = hierarchy
 
-        self.treatment_block = nn.ModuleList([
-            self.get_block(hidden_dim, hidden_dim, hidden_dim, num_layers)
-            for _ in range(num_treatments)
-        ])
+        if hierarchy:
+            self.treatment_block = nn.ModuleList([
+                self.get_block(hidden_dim, hidden_dim, hidden_dim, num_layers)
+                for _ in range(num_treatments)
+            ])
 
         self.head_block = nn.ModuleList([
             nn.ModuleList([
@@ -32,7 +34,8 @@ class DRNet(nn.Module):
         """
         # dos_idx = self.get_dosage_idx(s, t)
         x = self.base_block(x)
-        x = self.treatment_block[t](x)
+        if self.hierarchy:
+            x = self.treatment_block[t](x)
         x = self.head_block[t][int(dos_idx)](x)
         return x
 
@@ -57,9 +60,9 @@ class DRNet(nn.Module):
 
 class CausalDRNet(CausalModel):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, num_treatments, num_strata, dosage_bounds,
-                 learn_rate=0.0001):
+                 learn_rate=0.0001, hierarchy=True):
         super().__init__("DRNet", DRNet(input_dim, hidden_dim, output_dim, num_layers, num_treatments, num_strata,
-                                        dosage_bounds),
+                                        dosage_bounds, hierarchy=hierarchy),
                          t_types=num_treatments, requires_epochs=True)
         self.optimizer = th.optim.Adam(list(self.model.parameters()), lr=learn_rate)
         self.criterion = nn.MSELoss()

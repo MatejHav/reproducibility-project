@@ -1,3 +1,5 @@
+import time
+
 from DataAccess import *
 from kNN import *
 from MLP import *
@@ -49,6 +51,21 @@ def custom_news2_experiment(path, size=100, number_of_epochs=1000, batch_size=12
     return run_experiment(custom_access, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
                           test_size=test_size)
 
+def no_hierarchy_experiment(path, size=100, number_of_epochs=1000, batch_size=128, test_size=3 * 2048):
+    """
+    Removing the treatment layers and instead adding head that are twice as big for every treatment and dosage.
+    Hypothesis should be that samples of the same treatment share less layers, making it harder to learn.
+    """
+    news2_access = NewsDataAccess(data_dir=path, dimension=size, t=2)
+    dosage_bounds = th.tensor([(0, 1) for _ in range(news2_access.T_TYPES)])
+    experiment = Experiment([
+        CausalDRNet(input_dim=size, hidden_dim=96, output_dim=1, num_layers=2*3, num_treatments=news2_access.T_TYPES,
+                    num_strata=3, dosage_bounds=dosage_bounds, hierarchy=False),
+        MLP(input_size=size + 2, num_treatments=news2_access.T_TYPES, hidden_layer_units=96),
+        TARNET(input_size=size + 1, num_treatments=news2_access.T_TYPES, hidden_layer_units=96)
+    ], news2_access)
+    return experiment.run(epochs=number_of_epochs, batch_size=batch_size, test_size=test_size)
+
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -67,8 +84,11 @@ if __name__ == '__main__':
                                  test_size=test_size)
     custom_result = custom_news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
                                             test_size=test_size)
+    hierarchy_result = no_hierarchy_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+                                            test_size=test_size)
     col_names = ['Model', 'News-2', 'News-4', 'News-8', 'News-16', 'Custom News-2']
     results = combine_results([result2, result4, result8, result16, custom_result], col_names=col_names)
     for metric, table in results.items():
         table.to_csv(f'{path}{time.time()}_{metric}.csv')
+    hierarchy_result.to_csv(f'{path}{time.time()}_hierarchy.csv')
     print(f'FINISHED. TOOK: {time.time() - start_time} s')
