@@ -20,7 +20,6 @@ def multinomial(p):
 def dist(X, Y):
     return np.linalg.norm(X - Y)
 
-
 def combine_results(results, col_names):
     metrics = ['RMISE', 'DPE', 'PE']  # Add PE/DPE to metrics list if we have those!
 

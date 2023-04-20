@@ -91,19 +91,12 @@ class CausalDRNet(CausalModel):
                     outputs = self.model(X_filtered, t, dos_idx)
                     # Adding all the losses
                     loss = loss + self.criterion(outputs, Y[mask])
+        loss = loss / (self.t_types * self.num_strata)
         loss.backward()
         self.optimizer.step()
-        return loss
+        return loss.item()
 
-    # def train(self, X, S, T, Y):
-    #   X = torch.Tensor(X.values)
-    #   Y = torch.Tensor(Y)
 
-    #   self.optimizer.zero_grad()
-    #   outputs = self.model(X, T, S)
-    #   loss = self.criterion(outputs, Y)
-    #   loss.backward()
-    #   self.optimizer.step()
 
     def predict_dose_response(self, x, t, s):
         x = th.Tensor(x)

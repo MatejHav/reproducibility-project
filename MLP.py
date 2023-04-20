@@ -54,7 +54,7 @@ class MLP(CausalModel):
         loss = self.criterion(outputs, Y)
         loss.backward()
         self.optimizer.step()
-        return loss
+        return loss.item()
 
     def predict_dose_response(self, x, t, s):
         x = np.append(x.copy(), [t, s])

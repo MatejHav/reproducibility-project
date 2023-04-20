@@ -156,6 +156,9 @@ class NewsDataAccess:
         Y = f(new_X, treatments, dosages)
         return new_X, Y, treatments, dosages, S, N
 
+    def __str__(self):
+        return f'News-{self.T_TYPES}'
+
 
 class CustomNewsDataAccess(NewsDataAccess):
     def generate_potential_treatment_outcome(self, X):

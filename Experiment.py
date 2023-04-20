@@ -1,5 +1,8 @@
-import pandas as pd
+from collections import defaultdict
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import time
 
 class Experiment:
     def __init__(self, models, data_access):
@@ -15,6 +18,7 @@ class Experiment:
         for model in no_epoch_models:
             print(f'\t- {model.name}')
             model.train(X, S, T, Y)
+        losses = defaultdict(list)
         for model in epoch_models:
             print(f'\t- {model.name}')
             for epoch in range(epochs):
@@ -22,7 +26,16 @@ class Experiment:
                 batch_S = S[batch_X.index]
                 batch_T = T[batch_X.index]
                 batch_Y = Y[batch_X.index]
-                model.train(batch_X, batch_S, batch_T, batch_Y)
+                loss = model.train(batch_X, batch_S, batch_T, batch_Y)
+                losses[model.name].append(loss)
+        for model in losses:
+            plt.plot(range(epochs), losses[model], label=model)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title(f'Loss from {self.data} with {epochs} epochs and {batch_size} batch size')
+        plt.legend()
+        plt.savefig(f'loss_{self.data}_{epochs}_{batch_size}_{time.time()}.png')
+        plt.show()
 
     def test(self, test_size):
         print('Gathering testing data...')
@@ -43,9 +56,3 @@ class Experiment:
         self.train(epochs=epochs, batch_size=batch_size)
         print('Finished.')
         return self.test(test_size=test_size)
-
-    def plot(self):
-        pass
-
-    def _plot_model(self, model):
-        pass
