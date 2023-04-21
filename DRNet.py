@@ -85,13 +85,14 @@ class CausalDRNet(CausalModel):
             for dos_idx, (lower, upper) in enumerate(zip(divs, divs[1:])):
                 mask = (S >= lower) & (S <= upper) & (T == t)
                 if mask.any():
+                    # K -> number of treatment that hold
                     X_filtered = X[mask]
 
                     self.optimizer.zero_grad()
                     outputs = self.model(X_filtered, t, dos_idx)
                     # Adding all the losses
-                    loss = loss + self.criterion(outputs, Y[mask])
-        loss = loss / (self.t_types * self.num_strata)
+                    loss = loss + self.criterion(outputs, Y[mask]) * X_filtered.shape[0]
+        loss = loss / X.shape[0]
         loss.backward()
         self.optimizer.step()
         return loss.item()
