@@ -38,7 +38,7 @@ class NewsDataAccess:
         print(f"___________NEWS-{t}_______________")
         self.setup(run_pca=run_pca)
 
-    def setup(self, size=8000, run_pca=True):
+    def setup(self, size=50000, run_pca=True):
         print("(1) Setup starting...")
         data = pd.read_sql_query(f"SELECT x, z FROM news ORDER BY RANDOM() LIMIT {size}", self.db)
         data['z'] = data['z'].apply(list)
@@ -130,22 +130,22 @@ class NewsDataAccess:
 
     def get_true_outcome(self, x, t, s):
         """
-      Provides a the true outcome for any samples point
-      Paper:
+        Provides a the true outcome for any samples point
+        Paper:
         1. Find closest neighbour from the original set
         2. Use potential outcomes to recompute the outcome
-      """
+        """
         index = np.argmin(list(map(lambda y: dist(x, y), self.base_data)))
         return self.C * self.Y_t[index][t] * self.Y_s[index][t]
 
     def reformat_data(self, X, f, a=0, b=1, precision=16):
         """
-      X: all the samples
-      f: function converting samples to their real outcomes
-      a: start of the S interval
-      b: end of the S interval
-      precision: number of points between a and b
-      """
+        X: all the samples
+        f: function converting samples to their real outcomes
+        a: start of the S interval
+        b: end of the S interval
+        precision: number of points between a and b
+        """
         N = X.shape[0]
         S = np.linspace(a, b, precision)
         new_X = np.repeat(X.to_numpy(), self.T_TYPES * precision, axis=0)
@@ -169,7 +169,7 @@ class CustomNewsDataAccess(NewsDataAccess):
 
     def generate_treatment(self, X, Y_t, Y_s):
         maximum = X[:, :5].max()
-        propensity = X[:, :5].max(axis=1) / (0.01 + maximum)
+        propensity = abs((X[:, :5].max(axis=1) + N(10, 4)) / (1.25 * maximum))
         return np.vectorize(Bern)(propensity)
 
     def generate_dosage(self, X, T, Y_t, Y_s):
@@ -177,8 +177,8 @@ class CustomNewsDataAccess(NewsDataAccess):
         return nn.Softmax(dim=0)(th.Tensor(x_slice)).numpy()
 
     def generate_outcome(self, X, T, S, Y_t, Y_s):
-        return abs(5 * np.max(X, axis=1) + T * 0.4 / (0.01 + S))
+        return abs(np.max(X, axis=1)/200 + T * 40 / (0.01 + S))
 
     def get_true_outcome(self, x, t, s):
         index = np.argmin(list(map(lambda y: dist(x, y), self.base_data)))
-        return abs(5 * np.max(self.original_data[index]) + t * 0.4 / (0.01 + s))
+        return abs(np.max(self.original_data[index])/200 + t * 40 / (0.01 + s))

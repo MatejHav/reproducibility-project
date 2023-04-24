@@ -135,31 +135,31 @@ def run_main_experiments_quick(path, number_of_runs, size=100, number_of_epochs=
 if __name__ == '__main__':
     start_time = time.time()
     path = './'
-    size = 100
-    number_of_epochs = 1000
+    size = 50
+    number_of_epochs = 200
     batch_size = 128
     test_size = 5000
 
-    # result2 = news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-    #                            test_size=test_size)
-    # result4 = news4_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-    #                            test_size=test_size)
-    # result8 = news8_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-    #                            test_size=test_size)
-    # result16 = news16_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-    #                              test_size=test_size)
-    # custom_result = custom_news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-    #                                         test_size=test_size)
+    result2 = news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+                               test_size=test_size)
+    result4 = news4_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+                               test_size=test_size)
+    result8 = news8_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+                               test_size=test_size)
+    result16 = news16_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+                                 test_size=test_size)
+    custom_result = custom_news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+                                            test_size=test_size)
 
     # For a quick check over multiple seeds comment the previous runs and run the following line
-    result2, result4, result8, result16, custom_result = run_main_experiments_quick(path, number_of_runs=1, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size, test_size=test_size)
+    # result2, result4, result8, result16, custom_result = run_main_experiments_quick(path, number_of_runs=5, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size, test_size=test_size)
 
-    # hierarchy_result = no_hierarchy_experiment(path, size=size, number_of_epochs=number_of_epochs,
-    #                                            batch_size=batch_size,
-    #                                            test_size=test_size)
+    hierarchy_result = no_hierarchy_experiment(path, size=size, number_of_epochs=number_of_epochs,
+                                               batch_size=batch_size,
+                                               test_size=test_size)
     col_names = ['Model', 'News-2', 'News-4', 'News-8', 'News-16', 'Custom News-2']
     results = combine_results([result2, result4, result8, result16, custom_result], col_names=col_names)
     for metric, table in results.items():
         table.to_csv(f'{path}{time.time()}_{metric}.csv')
-    # hierarchy_result.to_csv(f'{path}{time.time()}_hierarchy.csv')
+    hierarchy_result.to_csv(f'{path}{time.time()}_hierarchy.csv')
     print(f'FINISHED. TOOK: {time.time() - start_time} s')
