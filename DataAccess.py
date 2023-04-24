@@ -173,12 +173,12 @@ class CustomNewsDataAccess(NewsDataAccess):
         return np.vectorize(Bern)(propensity)
 
     def generate_dosage(self, X, T, Y_t, Y_s):
-        x_slice = abs(np.prod(X[:, 5:11], axis=1)) + T
-        return nn.Softmax(dim=0)(th.Tensor(x_slice)).numpy()
+        x_slice = abs(np.sum(X[:, 5:11] / 100, axis=1)) + T
+        return x_slice / x_slice.max()
 
     def generate_outcome(self, X, T, S, Y_t, Y_s):
-        return abs(np.max(X, axis=1)/200 + T * 40 / (0.01 + S))
+        return abs(np.sum(X, axis=1)/100 + (T - 0.5) * 4 / (0.01 + S))
 
     def get_true_outcome(self, x, t, s):
         index = np.argmin(list(map(lambda y: dist(x, y), self.base_data)))
-        return abs(np.max(self.original_data[index])/200 + t * 40 / (0.01 + s))
+        return abs(np.sum(self.original_data[index])/100 + (t - 0.5) * 4 / (0.01 + s))

@@ -15,9 +15,9 @@ def run_experiment(data_access, size=100, number_of_epochs=1000, batch_size=128,
         CausalDRNet(input_dim=size, hidden_dim=96, output_dim=1, num_layers=3, num_treatments=data_access.T_TYPES,
                     num_strata=3, dosage_bounds=dosage_bounds),
         MLP(input_size=size + 2, num_treatments=data_access.T_TYPES, hidden_layer_units=96),
-        TARNET(input_size=size + 1, num_treatments=data_access.T_TYPES, hidden_layer_units=96),
-        CausalForest(t_types=data_access.T_TYPES, number_of_trees=8, max_feat=5),
-        NearestNeighbour(t_types=data_access.T_TYPES, k=10)
+        TARNET(input_size=size + 1, num_treatments=data_access.T_TYPES, hidden_layer_units=96)
+        # CausalForest(t_types=data_access.T_TYPES, number_of_trees=8, max_feat=5),
+        # NearestNeighbour(t_types=data_access.T_TYPES, k=10)
     ], data_access)
     return experiment.run(epochs=number_of_epochs, batch_size=batch_size, test_size=test_size)
 
@@ -136,30 +136,30 @@ if __name__ == '__main__':
     start_time = time.time()
     path = './'
     size = 50
-    number_of_epochs = 200
+    number_of_epochs = 400
     batch_size = 128
     test_size = 5000
 
-    result2 = news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-                               test_size=test_size)
-    result4 = news4_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-                               test_size=test_size)
-    result8 = news8_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-                               test_size=test_size)
-    result16 = news16_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
-                                 test_size=test_size)
+    # result2 = news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+    #                            test_size=test_size)
+    # result4 = news4_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+    #                            test_size=test_size)
+    # result8 = news8_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+    #                            test_size=test_size)
+    # result16 = news16_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
+    #                              test_size=test_size)
     custom_result = custom_news2_experiment(path, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size,
                                             test_size=test_size)
 
     # For a quick check over multiple seeds comment the previous runs and run the following line
     # result2, result4, result8, result16, custom_result = run_main_experiments_quick(path, number_of_runs=5, size=size, number_of_epochs=number_of_epochs, batch_size=batch_size, test_size=test_size)
 
-    hierarchy_result = no_hierarchy_experiment(path, size=size, number_of_epochs=number_of_epochs,
-                                               batch_size=batch_size,
-                                               test_size=test_size)
-    col_names = ['Model', 'News-2', 'News-4', 'News-8', 'News-16', 'Custom News-2']
-    results = combine_results([result2, result4, result8, result16, custom_result], col_names=col_names)
-    for metric, table in results.items():
-        table.to_csv(f'{path}{time.time()}_{metric}.csv')
-    hierarchy_result.to_csv(f'{path}{time.time()}_hierarchy.csv')
+    # hierarchy_result = no_hierarchy_experiment(path, size=size, number_of_epochs=number_of_epochs,
+    #                                            batch_size=batch_size,
+    #                                            test_size=test_size)
+    # col_names = ['Model', 'News-2', 'News-4', 'News-8', 'News-16', 'Custom News-2']
+    # results = combine_results([result2, result4, result8, result16, custom_result], col_names=col_names)
+    # for metric, table in results.items():
+    #     table.to_csv(f'{path}{time.time()}_{metric}.csv')
+    # hierarchy_result.to_csv(f'{path}{time.time()}_hierarchy.csv')
     print(f'FINISHED. TOOK: {time.time() - start_time} s')
